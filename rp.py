@@ -20,7 +20,11 @@ try:
 except IOError:
     env = os.environ
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder='static',
+    template_folder='templates',
+)
 
 
 HOSTED_LOCK = 'https://{domain}/login?client={client_secret}'.format(
@@ -33,9 +37,8 @@ def requires_auth(f):
   @wraps(f)
   def decorated(*args, **kwargs):
     if 'profile' not in session:
-      print(HOSTED_LOCK)
       # Redirect to Login page here
-      return redirect(HOSTED_LOCK)
+      return redirect('/')
     return f(*args, **kwargs)
 
   return decorated
@@ -66,9 +69,9 @@ def callback_handling():
   return redirect('/')
 
 @app.route('/', methods=['GET', 'POST'])
-@requires_auth
+#@requires_auth
 def home():
-    return render_template('index.html')
+    return render_template('index.html', env=env)
 
 if __name__ == '__main__':
     app.run(debug=True)

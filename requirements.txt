@@ -1,0 +1,11 @@
+requests
+request
+pytest-xdist
+pytest
+nose
+nose-watch
+jinja2
+flask
+dotenv
+PyJWT
+flask-cors

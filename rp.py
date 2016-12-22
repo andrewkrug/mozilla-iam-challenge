@@ -4,6 +4,7 @@ Flask app for Mozilla's IAM OpenID Connect Challenge
 import time
 import requests
 import os
+import json
 from dotenv import Dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, render_template, send_from_directory
 
@@ -26,12 +27,6 @@ app = Flask(
     template_folder='templates',
 )
 
-
-HOSTED_LOCK = 'https://{domain}/login?client={client_secret}'.format(
-    domain=auth_0_domain,
-    client_secret=client_id
-)
-
 # Requires authentication decorator
 def requires_auth(f):
   @wraps(f)
@@ -47,11 +42,11 @@ def requires_auth(f):
 def callback_handling():
   code = request.args.get('code')
   json_header = {'content-type': 'application/json'}
-  token_url = "https://{domain}/oauth/token".format(domain=AUTH_0_DOMAIN)
+  token_url = "https://{domain}/oauth/token".format(domain=auth_0_domain)
 
   token_payload = {
-    'client_id': CLIENT_ID,
-    'client_secret': CLIENT_SECRET,
+    'client_id': client_id,
+    'client_secret': client_secret,
     'redirect_uri':  'https://127.0.0.1:5000/callback',
     'code':          code,
     'grant_type':    'authorization_code'
@@ -60,7 +55,7 @@ def callback_handling():
   token_info = requests.post(token_url, data=json.dumps(token_payload), headers = json_header).json()
 
   user_url = "https://{domain}/userinfo?access_token={access_token}" \
-      .format(domain=AUTH_0_DOMAIN, access_token=token_info['access_token'])
+      .format(domain=auth_0_domain, access_token=token_info['access_token'])
 
   user_info = requests.get(user_url).json()
 

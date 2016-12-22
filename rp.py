@@ -4,19 +4,28 @@ Flask app for Mozilla's IAM OpenID Connect Challenge
 import time
 import requests
 import os
+from dotenv import Dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, render_template, send_from_directory
 
 #So I can add custom decorators
 from functools import wraps
 
+env = None
+
+try:
+    env = Dotenv('./.env')
+    client_id = env["AUTH0_CLIENT_ID"]
+    client_secret = env["AUTH0_CLIENT_SECRET"]
+    auth_0_domain = env["AUTH0_DOMAIN"]
+except IOError:
+    env = os.environ
+
 app = Flask(__name__)
 
-AUTH_0_DOMAIN = os.environ.get('YOUR_AUTH0_DOMAIN')
-CLIENT_SECRET = os.environ.get('YOUR_CLIENT_SECRET')
-CLIENT_ID = os.environ.get('YOUR_CLIENT_ID')
+
 HOSTED_LOCK = 'https://{domain}/login?client={client_secret}'.format(
-    domain=AUTH_0_DOMAIN,
-    client_secret=CLIENT_ID
+    domain=auth_0_domain,
+    client_secret=client_id
 )
 
 # Requires authentication decorator

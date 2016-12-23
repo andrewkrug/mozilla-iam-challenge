@@ -2,18 +2,20 @@
 Flask app for Mozilla's IAM OpenID Connect Challenge
 """
 import time
-import requests
+
 import os
-import json
+import requests
 from dotenv import Dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, render_template, send_from_directory
 
 #So I can add custom decorators
 from functools import wraps
 
+#My OIDCCallbackHandler
+import callback
+
 #Set the session type to be memory normally I would use redis
 SESSION_TYPE = 'memcache'
-
 
 env = None
 
@@ -48,31 +50,39 @@ def requires_auth(f):
 
 @app.route('/callback')
 def callback_handling():
-  code = request.args.get('code')
-  json_header = {'content-type': 'application/json'}
-  token_url = "https://{domain}/oauth/token".format(domain=auth_0_domain)
+  try:
+      """Controller style wrapper to handle all callbacks"""
+      code = request.args.get('code')
+      handler = callback.OIDCCallbackHandler(
+        client_id,
+        client_secret,
+        auth_0_domain
+      )
 
-  token_payload = {
-    'client_id': client_id,
-    'client_secret': client_secret,
-    'redirect_uri':  'http://127.0.0.1:5000/callback',
-    'code':          code,
-    'grant_type':    'authorization_code'
-  }
+      """Ask our custom handler to get the token payload"""
+      token_payload = handler.generate_token_payload(code)
 
-  token_info = requests.post(token_url, data=json.dumps(token_payload), headers = json_header).json()
+      """Ask our custom handler to send a post via requests \
+      and return token info this contains our access token\
+      we can then use the access_token to do additional things
+      via the API like enumerate more information about the user"""
+      token_info = handler.token_info(token_payload)
 
-  print(token_payload)
-  print(token_info)
+      """Pass our complete token info to the handler for follow up\
+      info to store in session"""
+      user_info = handler.get_session_information(token_info)
 
-  user_url = "https://{domain}/userinfo?access_token={access_token}" \
-      .format(domain=auth_0_domain, access_token=token_info['access_token'])
+      """Store our user attributes in session"""
+      session['profile'] = user_info
+      
+      return redirect('/supersecret')
+  except:
+      """If anything returns an error during this redirect to custom error"""
+      return redirect('/error')
 
-  user_info = requests.get(user_url).json()
-
-  session['profile'] = user_info
-
-  return redirect('/')
+@app.route('/error', methods=['GET'])
+def bad_things_happened():
+    return render_template('error.html')
 
 @app.route('/supersecret', methods=['GET'])
 @requires_auth

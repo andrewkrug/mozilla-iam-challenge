@@ -10,3 +10,7 @@
 2. Assumes some app setup on your part via Auth0. (_Github client secrets copy and paste with whitespace at the beginning so beware.  Auth0 does not strip these._)
 
 ## How to run test suite
+
+1. Setup a python virtual env `virtualenv .`
+2. `source bin/activate`
+3. Run nose `nosetests --with-watch`

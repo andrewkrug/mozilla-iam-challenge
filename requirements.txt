@@ -11,3 +11,4 @@ PyJWT
 flask-cors
 datetime
 pycrypto
+cyptography

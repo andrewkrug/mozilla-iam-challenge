@@ -6,6 +6,7 @@ import json
 import base64
 import time
 import hmac
+import jwt
 from dotenv import Dotenv
 import hashlib
 from Crypto.Hash import SHA256 as sha256_module
@@ -46,29 +47,32 @@ class OIDCCallbackHandler(object):
         signature = str(token_info['id_token'].split('.')[2])
         payload = str(token_info['id_token'].split('.')[1])
         header = str(token_info['id_token'].split('.')[0])
+        secret = self.client_secret
+        secret = base64.urlsafe_b64decode(secret)
+
+
         if self.__is_missing_padding(signature) != 0:
             signature = self.__add_padding(signature, self.__is_missing_padding(signature))
-            signature = base64.decodestring(signature)
-        if self.__is_missing_padding(payload) != 0:
-            payload = self.__add_padding(payload, self.__is_missing_padding(payload))
-            payload = base64.decodestring(payload)
-        if self.__is_missing_padding(header) != 0:
-            header = self.__add_padding(header, self.__is_missing_padding(header))
-            header = base64.decodestring(header)
-        print signature
-        print payload
-        print header
-        print(self.__generate_signature_for_token(signature + "." + payload))
-        return True
+            signature = base64.urlsafe_b64decode(signature)
 
-    def __generate_signature_for_token(self, text):
+
+        if self.__generate_signature_for_token(
+            (header + "." + payload),
+            secret
+        ) == signature:
+            return True
+        else:
+            return False
+
+    def __generate_signature_for_token(self, text, secret):
         """Auth0 is known to use hmac SHA256 for sigining\
         attempt to generate a matching hash"""
-        return hmac.new(
-            self.client_secret,
+        signature =  hmac.new(
+            secret,
             text,
             sha256_module
         ).digest()
+        return signature
 
     def __expiration(self, token_info):
         """Takes token info and parses it to return the token expiration"""

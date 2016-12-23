@@ -5,8 +5,6 @@ import requests
 import json
 from dotenv import Dotenv
 
-
-
 class OIDCCallbackHandler(object):
     def __init__(self, client_id, client_secret, auth_0_domain):
         self.client_id = client_id
@@ -27,6 +25,7 @@ class OIDCCallbackHandler(object):
         the user form auth0"""
         try:
             userinfo = requests.get(user_url).json()
+            return userinfo
         except:
             #Add entry in stream logger that request did not complete
             return None

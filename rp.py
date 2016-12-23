@@ -74,7 +74,7 @@ def callback_handling():
 
       """Store our user attributes in session"""
       session['profile'] = user_info
-      
+
       return redirect('/supersecret')
   except:
       """If anything returns an error during this redirect to custom error"""
@@ -93,7 +93,7 @@ def secret():
 def home():
     if 'profile' in session:
         return redirect('/supersecret')
-    return render_template('index.html', env=env)
+    return render_template('index.html', env=env, session=session['profile'])
 
 if __name__ == '__main__':
     app.run(debug=True)

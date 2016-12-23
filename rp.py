@@ -44,6 +44,20 @@ def requires_auth(f):
   @wraps(f)
   def decorated(*args, **kwargs):
     if 'profile' in session:
+        handler = callback.OIDCCallbackHandler(
+            client_id,
+            client_secret,
+            auth_0_domain
+        )
+        print
+        try:
+            if handler.expiration(session['token_info']) == True:
+                session.clear()
+                return redirect('/')
+            else:
+                pass
+        except:
+            pass
         try:
             if will_refresh_token(session['token_last_validated']):
                 print "time to check validity"
@@ -61,7 +75,6 @@ def requires_auth(f):
                     return redirect('/')
         except:
             pass
-
         else:
             print "not time to check token validity"
             pass

@@ -3,6 +3,8 @@ Callback library for validations on information inbound
 """
 import requests
 import json
+import base64
+import time
 from dotenv import Dotenv
 
 class OIDCCallbackHandler(object):
@@ -14,6 +16,21 @@ class OIDCCallbackHandler(object):
 
     def expiration(self, token_info):
         """Takes token info and parses it to return the token expiration"""
+        data = str(token_info['id_token'].split('.')[1])
+        missing_padding = len(data) % 4
+        if missing_padding != 0:
+            data += b'='* (4 - missing_padding)
+            data = json.loads(base64.decodestring(data))
+
+        expiry = data['exp']
+
+        """If expiry occurs before the current epoch time throw True\
+        to indicate that the access token is expired an user should re-auth\
+        """
+        if expiry < time.time():
+            return True
+        else:
+            return False
         pass
 
     def is_valid(self, token_info):

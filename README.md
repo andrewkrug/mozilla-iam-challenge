@@ -2,7 +2,7 @@
 # Running this project ( in a production way )
 
 #Based on the challenge instructions available here:
-[Assignment]('https://gist.github.com/jeffbryner/2792488ed4c26b47656e592322cbe6cb')
+[Assignment]('https://gist.github.com/jeffbryner/2792488ed4c26b47656e592322cbe6cb') https://gist.github.com/jeffbryner/2792488ed4c26b47656e592322cbe6cb
 
 ## Caveats
 

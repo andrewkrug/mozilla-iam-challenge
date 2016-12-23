@@ -5,7 +5,10 @@ import requests
 import json
 import base64
 import time
+import hmac
 from dotenv import Dotenv
+import hashlib
+from Crypto.Hash import SHA256 as sha256_module
 
 class OIDCCallbackHandler(object):
     def __init__(self, client_id, client_secret, auth_0_domain):
@@ -22,16 +25,50 @@ class OIDCCallbackHandler(object):
             return False
         elif self.__is_valid(token_info) == False:
             return False
-        elif self.__is_signed_approriately == False:
+        elif self.__is_signed_approriately(token_info) == False:
             return False
         else:
             return True
 
+    def __is_missing_padding(self, data):
+        """Returns how much padding missing depending on whether the length \
+        can be modulus 4.  Solve B64 decode problem for string friendlieness"""
+        missing_padding = len(data) % 4
+        return missing_padding
+
+    def __add_padding(self, data, missing_padding):
+        data += b'='* (4 - missing_padding)
+        return data
+
     def __is_signed_approriately(self, token_info):
         """Takes token info and returns whether the token is\
         correctly signed against auth0"""
+        signature = str(token_info['id_token'].split('.')[2])
+        payload = str(token_info['id_token'].split('.')[1])
+        header = str(token_info['id_token'].split('.')[0])
+        if self.__is_missing_padding(signature) != 0:
+            signature = self.__add_padding(signature, self.__is_missing_padding(signature))
+            signature = base64.decodestring(signature)
+        if self.__is_missing_padding(payload) != 0:
+            payload = self.__add_padding(payload, self.__is_missing_padding(payload))
+            payload = base64.decodestring(payload)
+        if self.__is_missing_padding(header) != 0:
+            header = self.__add_padding(header, self.__is_missing_padding(header))
+            header = base64.decodestring(header)
+        print signature
+        print payload
+        print header
+        print(self.__generate_signature_for_token(signature + "." + payload))
         return True
 
+    def __generate_signature_for_token(self, text):
+        """Auth0 is known to use hmac SHA256 for sigining\
+        attempt to generate a matching hash"""
+        return hmac.new(
+            self.client_secret,
+            text,
+            sha256_module
+        ).digest()
 
     def __expiration(self, token_info):
         """Takes token info and parses it to return the token expiration"""
@@ -40,7 +77,6 @@ class OIDCCallbackHandler(object):
         if missing_padding != 0:
             data += b'='* (4 - missing_padding)
             data = json.loads(base64.decodestring(data))
-
         expiry = data['exp']
 
         """If expiry occurs before the current epoch time throw True\

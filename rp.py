@@ -7,6 +7,7 @@ import os
 import requests
 from dotenv import Dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, render_template, send_from_directory
+from flask.ext.cors import cross_origin
 
 #So I can add custom decorators
 from functools import wraps
@@ -85,6 +86,7 @@ def bad_things_happened():
     return render_template('error.html')
 
 @app.route('/supersecret', methods=['GET'])
+@cross_origin(headers=['Content-Type', 'Authorization'])
 @requires_auth
 def secret():
     return render_template('secret.html')
@@ -93,6 +95,8 @@ def secret():
 def home():
     if 'profile' in session:
         return redirect('/supersecret')
+    else:
+        session['profile'] = None
     return render_template('index.html', env=env, session=session['profile'])
 
 if __name__ == '__main__':

@@ -43,43 +43,21 @@ app.secret_key = secret_key
 def requires_auth(f):
   @wraps(f)
   def decorated(*args, **kwargs):
-    if 'profile' in session:
+    if 'token_info' in session:
         handler = callback.OIDCCallbackHandler(
             client_id,
             client_secret,
             auth_0_domain
         )
-        print
-        try:
-            if handler.expiration(session['token_info']) == True:
-                session.clear()
-                return redirect('/')
-            else:
-                pass
-        except:
+        if handler.is_secure(session['token_info']):
             pass
-        try:
-            if will_refresh_token(session['token_last_validated']):
-                print "time to check validity"
-                handler = callback.OIDCCallbackHandler(
-                    client_id,
-                    client_secret,
-                    auth_0_domain
-                )
-                if handler.is_valid(session['token_info']) == True:
-                    print("user is still valid in the application")
-                else:
-                    #If the session isn't validate invalidate flask cookie
-                    print("user is disabled or auth token is not valid")
-                    session.clear()
-                    return redirect('/')
-        except:
-            pass
+            """Do nothing the token meets all the security criteria"""
         else:
-            print "not time to check token validity"
-            pass
-            #don't do anything
-    if 'profile' not in session:
+            """If any of the security criteria fails clear the session \
+            and force login again"""
+            session.clear()
+            return redirect('/')
+    else:
       # Redirect to Login page here
       return redirect('/')
     return f(*args, **kwargs)

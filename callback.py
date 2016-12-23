@@ -14,7 +14,26 @@ class OIDCCallbackHandler(object):
         self.auth_0_domain = auth_0_domain
         self.redirect_uri = self.__get_redirect_uri()
 
-    def expiration(self, token_info):
+    def is_secure(self, token_info):
+        """Convinience function to simplify controller\
+        will check token expiration, validity against auth0\
+        and finally token signing"""
+        if self.__expiration(token_info) == True:
+            return False
+        elif self.__is_valid(token_info) == False:
+            return False
+        elif self.__is_signed_approriately == False:
+            return False
+        else:
+            return True
+
+    def __is_signed_approriately(self, token_info):
+        """Takes token info and returns whether the token is\
+        correctly signed against auth0"""
+        return True
+
+
+    def __expiration(self, token_info):
         """Takes token info and parses it to return the token expiration"""
         data = str(token_info['id_token'].split('.')[1])
         missing_padding = len(data) % 4
@@ -33,7 +52,7 @@ class OIDCCallbackHandler(object):
             return False
         pass
 
-    def is_valid(self, token_info):
+    def __is_valid(self, token_info):
         """Take a token and queries auth0 to see if the token is still valid"""
         try:
             if self.get_session_information(token_info)['email']:

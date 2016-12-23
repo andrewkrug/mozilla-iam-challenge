@@ -8,7 +8,7 @@
 
 1. Some hard coded urls point callbacks to http://127.0.0.1:5000
 2. Assumes some app setup on your part via Auth0. (_Github client secrets copy and paste with whitespace at the beginning so beware.  Auth0 does not strip these._)
-3. Signature validation is a work in progress... for now just returning true whilst working out the SHA256 validation process.
+3. Signature validation is working  ... the hard manual way.  Not using JWT parsing.  ( Not a caveat just plain neat )
 
 ## How to run test suite
 

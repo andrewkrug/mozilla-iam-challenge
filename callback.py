@@ -12,6 +12,20 @@ class OIDCCallbackHandler(object):
         self.auth_0_domain = auth_0_domain
         self.redirect_uri = self.__get_redirect_uri()
 
+    def expiration(self, token_info):
+        """Takes token info and parses it to return the token expiration"""
+        pass
+
+    def is_valid(self, token_info):
+        """Take a token and queries auth0 to see if the token is still valid"""
+        try:
+            if self.get_session_information(token_info)['email']:
+                return True
+            else:
+                return False
+        except:
+            return False
+
     def get_session_information(self, token_info):
         """Takes token info and calls two subsequent methods to construct\
         the URL and validate the response"""

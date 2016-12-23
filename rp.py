@@ -5,6 +5,8 @@ import time
 
 import os
 import requests
+from datetime import datetime
+from datetime import timedelta
 from dotenv import Dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, render_template, send_from_directory
 from flask.ext.cors import cross_origin
@@ -37,11 +39,37 @@ app = Flask(
 
 app.secret_key = secret_key
 
-
 # Requires authentication decorator
 def requires_auth(f):
   @wraps(f)
   def decorated(*args, **kwargs):
+    if 'profile' in session:
+        try:
+            if will_refresh_token(session['token_last_validated']):
+                print "time to check validity"
+                handler = callback.OIDCCallbackHandler(
+                    client_id,
+                    client_secret,
+                    auth_0_domain
+                )
+                if handler.is_valid(session['token_info']) == True:
+                    print session['token_info']
+
+                    #If the session is still valid do nothing
+                    pass
+                else:
+                    #If the session isn't validate invalidate flask cookie
+                    print("user is disabled or auth token is not valid")
+                    session.clear()
+                    return redirect('/')
+
+        except:
+            pass
+
+        else:
+            print "not time to check token validity"
+            pass
+            #don't do anything
     if 'profile' not in session:
       # Redirect to Login page here
       return redirect('/')
@@ -62,24 +90,37 @@ def callback_handling():
 
       """Ask our custom handler to get the token payload"""
       token_payload = handler.generate_token_payload(code)
+      print token_payload
 
       """Ask our custom handler to send a post via requests \
       and return token info this contains our access token\
       we can then use the access_token to do additional things
       via the API like enumerate more information about the user"""
       token_info = handler.token_info(token_payload)
+      print token_info
 
       """Pass our complete token info to the handler for follow up\
       info to store in session"""
       user_info = handler.get_session_information(token_info)
 
-      """Store our user attributes in session"""
+      """Store our user and token attributes in session"""
       session['profile'] = user_info
+      session['token_info'] = token_info
+      session['token_last_validated'] = datetime.now()
 
       return redirect('/supersecret')
   except:
       """If anything returns an error during this redirect to custom error"""
+      session.clear()
       return redirect('/error')
+
+def will_refresh_token(last_update_time):
+    """Returns true or false as to whether token needs to be refreshed
+    at 15 minute intervals"""
+    if (datetime.now() - timedelta(seconds=4) < last_update_time):
+        return False
+    else:
+        return True
 
 @app.route('/error', methods=['GET'])
 def bad_things_happened():

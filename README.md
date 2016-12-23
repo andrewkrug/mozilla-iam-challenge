@@ -1,6 +1,9 @@
 # Mozilla Foundation IAM Test
 # Running this project ( in a production way )
 
+#Based on the challenge instructions available here:
+[Assignment]('https://gist.github.com/jeffbryner/2792488ed4c26b47656e592322cbe6cb')
+
 ## Caveats
 
 1. Some hard coded urls point callbacks to http://127.0.0.1:5000

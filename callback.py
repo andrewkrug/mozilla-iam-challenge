@@ -66,7 +66,7 @@ class OIDCCallbackHandler(object):
             ).json()
             return token_info
         except Exception as error:
-            #Add entry in stream logger that token info was not parseable
+            raise error
             return None
             pass
 
@@ -74,4 +74,7 @@ class OIDCCallbackHandler(object):
         """Returns a redirect URI from environment file """
         env = Dotenv('./.env')
         uri = env["AUTH0_CALLBACK_URL"]
-        return uri
+        if uri is not None:
+            return uri
+        else:
+            return "http://127.0.0.1:5000/callback"

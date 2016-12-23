@@ -53,16 +53,12 @@ def requires_auth(f):
                     auth_0_domain
                 )
                 if handler.is_valid(session['token_info']) == True:
-                    print session['token_info']
-
-                    #If the session is still valid do nothing
-                    pass
+                    print("user is still valid in the application")
                 else:
                     #If the session isn't validate invalidate flask cookie
                     print("user is disabled or auth token is not valid")
                     session.clear()
                     return redirect('/')
-
         except:
             pass
 
@@ -116,7 +112,9 @@ def callback_handling():
 
 def will_refresh_token(last_update_time):
     """Returns true or false as to whether token needs to be refreshed
-    at 15 minute intervals"""
+    at 15 minute intervals currently set to check every 4 seconds to\
+    facilitate testing rather than every 15 minutes as per best practice\
+    """
     if (datetime.now() - timedelta(seconds=4) < last_update_time):
         return False
     else:

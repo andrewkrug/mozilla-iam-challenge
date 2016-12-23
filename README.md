@@ -4,7 +4,8 @@ This is not really flaskified in production... because of the lack of unicorn an
 
 However you may elect to run this from the Docker container that's been prepared for you.
 
-Note: __Regardless of how you run this you'll need to craft an environment file___
+Note: __Regardless of how you run this you'll need to craft an environment file__
+
 _A sample environment file has been provided for convinience_
 
 ```

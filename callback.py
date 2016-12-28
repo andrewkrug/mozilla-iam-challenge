@@ -44,6 +44,7 @@ class OIDCCallbackHandler(object):
     def __is_signed_approriately(self, token_info):
         """Takes token info and returns whether the token is\
         correctly signed against auth0"""
+
         signature = str(token_info['id_token'].split('.')[2])
         payload = str(token_info['id_token'].split('.')[1])
         header = str(token_info['id_token'].split('.')[0])
@@ -51,15 +52,12 @@ class OIDCCallbackHandler(object):
         secret = base64.urlsafe_b64decode(secret)
 
 
-        if self.__is_missing_padding(signature) != 0:
-            signature = self.__add_padding(signature, self.__is_missing_padding(signature))
-            signature = base64.urlsafe_b64decode(signature)
-
-
-        if self.__generate_signature_for_token(
+        this_signature = base64.urlsafe_b64encode(self.__generate_signature_for_token(
             (header + "." + payload),
-            secret
-        ) == signature:
+            secret)
+        )[:-1]
+
+        if this_signature == signature:
             return True
         else:
             return False

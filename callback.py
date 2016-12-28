@@ -49,7 +49,7 @@ class OIDCCallbackHandler(object):
         payload = str(token_info['id_token'].split('.')[1])
         header = str(token_info['id_token'].split('.')[0])
         secret = self.client_secret
-        secret = base64.urlsafe_b64decode(secret)
+        #secret = base64.urlsafe_b64decode(secret)
 
 
         this_signature = base64.urlsafe_b64encode(self.__generate_signature_for_token(
